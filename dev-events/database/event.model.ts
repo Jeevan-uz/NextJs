@@ -127,8 +127,6 @@ EventSchema.pre("save", function (next) {
   if (event.isModified("time")) {
     event.time = normalizeTime(event.time);
   }
-
-  next();
 });
 
 // Helper function to generate URL-friendly slug

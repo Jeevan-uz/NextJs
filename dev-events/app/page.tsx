@@ -1,15 +1,23 @@
 import EventCard from "@/components/EventCard";
 import ExploreBtn from "@/components/ExpolreBtn";
-import { IEvent } from "@/database";
+import { Event, IEvent } from "@/database";
 import { cacheLife } from "next/cache";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+import connectDB from "@/lib/mongodb";
 
 const Page = async () => {
   "use cache";
   cacheLife("hours");
-  const response = await fetch(`${BASE_URL}/api/events`);
-  const { events } = await response.json();
+
+  // 1. Connect to the database
+  await connectDB;
+
+  // 2. Fetch the events directly from MongoDB
+  const rawEvents = await Event.find().sort({ createdAt: -1 }).lean();
+
+  // 3. Convert Mongoose ObjectIds into plain text strings.
+  // This does exactly what `response.json()` used to do and prevents Next.js errors!
+  const events = JSON.parse(JSON.stringify(rawEvents));
 
   return (
     <section>

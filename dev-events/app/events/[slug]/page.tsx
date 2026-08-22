@@ -1,8 +1,11 @@
-import BookEvent from "@/components/BookEvent";
-import EventCard from "@/components/EventCard";
-import { getSimilarEventsBySlug } from "@/lib/actions/event.action";
-import Image from "next/image";
 import { notFound } from "next/navigation";
+import Image from "next/image";
+import BookEvent from "@/components/BookEvent";
+import { IEvent } from "@/database";
+import { getSimilarEventsBySlug } from "@/lib/actions/event.action";
+import EventCard from "@/components/EventCard";
+import { cacheLife } from "next/cache";
+import { Suspense } from "react"; // 1. IMPORT SUSPENSE
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -42,28 +45,51 @@ const EventTags = ({ tags }: { tags: string[] }) => (
   </div>
 );
 
-const EventDetailsPage = async ({
+// 2. RENAME YOUR COMPONENT FROM `EventDetailsPage` TO `EventContent`
+const EventContent = async ({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) => {
+  "use cache";
+  cacheLife("hours");
+
+  // Reading params happens safely inside the Suspended component
   const { slug } = await params;
-  const request = await fetch(`${BASE_URL}/api/events/${slug}`);
+
+  let event;
+  try {
+    const request = await fetch(`${BASE_URL}/api/events/${slug}`, {
+      next: { revalidate: 60 },
+    });
+
+    if (!request.ok) {
+      if (request.status === 404) return notFound();
+      throw new Error(`Failed to fetch event: ${request.statusText}`);
+    }
+
+    const response = await request.json();
+    event = response.event;
+
+    if (!event) return notFound();
+  } catch (error) {
+    console.error("Error fetching event:", error);
+    return notFound();
+  }
+
   const {
-    event: {
-      description,
-      image,
-      overview,
-      date,
-      time,
-      location,
-      mode,
-      agenda,
-      audience,
-      tags,
-      organizer,
-    },
-  } = await request.json();
+    description,
+    image,
+    overview,
+    date,
+    time,
+    location,
+    mode,
+    agenda,
+    audience,
+    tags,
+    organizer,
+  } = event;
 
   if (!description) return notFound();
 
@@ -78,8 +104,6 @@ const EventDetailsPage = async ({
       </div>
 
       <div className="details">
-        {/* {left side - Event content} */}
-
         <div className="content">
           <Image
             src={image}
@@ -96,7 +120,6 @@ const EventDetailsPage = async ({
 
           <section className="flex-col-gap-2">
             <h2>Event Details</h2>
-
             <EventDetailItem
               icon="/icons/calendar.svg"
               alt="calendar"
@@ -112,29 +135,27 @@ const EventDetailsPage = async ({
             />
           </section>
 
-          <EventAgenda agendaItems={JSON.parse(agenda[0])} />
+          <EventAgenda agendaItems={agenda} />
 
           <section className="flex-col-gap-2">
             <h2>About the Organizer</h2>
             <p>{organizer}</p>
           </section>
 
-          <EventTags tags={JSON.parse(tags[0])} />
+          <EventTags tags={tags} />
         </div>
 
-        {/* {Right side - Booking} */}
         <aside className="booking">
           <div className="signup-card">
-            <h2>Book Your spot</h2>
+            <h2>Book Your Spot</h2>
             {bookings > 0 ? (
               <p className="text-sm">
                 Join {bookings} people who have already booked their spot!
               </p>
             ) : (
-              <p className="text-sm">Be the first to book ypur spot!</p>
+              <p className="text-sm">Be the first to book your spot!</p>
             )}
-
-            <BookEvent />
+            <BookEvent eventId={event._id} slug={event.slug} />
           </div>
         </aside>
       </div>
@@ -152,4 +173,20 @@ const EventDetailsPage = async ({
   );
 };
 
-export default EventDetailsPage;
+// 3. CREATE A NEW DEFAULT EXPORT THAT WRAPS IT IN SUSPENSE
+export default function EventDetailsPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  return (
+    // The Suspense fallback will show instantly, satisfying Next.js's prerendering rule
+    <Suspense
+      fallback={
+        <div className="p-10 text-center text-lg">Loading event details...</div>
+      }
+    >
+      <EventContent params={params} />
+    </Suspense>
+  );
+}

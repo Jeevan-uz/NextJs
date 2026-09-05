@@ -1,4 +1,5 @@
 import Hero from "@/components/Hero";
+import Calculator from "@/components/Calculator";
 
 const Page = () => {
   return (
@@ -16,7 +17,9 @@ const Page = () => {
             Left Side (services)
             <Hero />
           </div>
-          <div className="w-1/3 bg-blue-500">Right Side (Calculator)</div>
+          {/* <div className="w-1/3 ">
+            <Calculator />
+          </div> */}
         </div>
       </main>
     </>

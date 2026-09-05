@@ -12,14 +12,14 @@ interface props {
 
 const Card = ({ title, slug, image, price }: props) => {
   return (
-    <div className="mt-5">
+    <div className="mt-5 ">
       <Link href={`/services/${slug}`} id="card">
         <Image
           src={image}
           alt={title}
           width={410}
           height={300}
-          className="poster"
+          className="poster "
           priority
         ></Image>
       </Link>

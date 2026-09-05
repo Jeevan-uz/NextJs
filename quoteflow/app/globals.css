@@ -272,3 +272,86 @@
     }
   }
 }
+
+/* Center the calculator inside its parent element */
+.calculator-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  /* background-color: #f4f4f9; */
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Main body structure */
+.calculator {
+  width: 320px;
+  background-color: #17171c;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Display rules */
+.display-screen input {
+  width: 100%;
+  height: 80px;
+  background-color: transparent;
+  border: none;
+  color: #ffffff;
+  text-align: right;
+  font-size: 2.5rem;
+  padding: 10px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+/* Keypad Grid layout rules */
+.keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 15px;
+}
+
+/* Global button styles */
+.btn {
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  font-size: 1.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  background-color: #2e2f38;
+  color: #ffffff;
+  transition: background-color 0.2s ease;
+}
+
+.btn:active {
+  opacity: 0.8;
+}
+
+/* Modifier classes for button categories */
+.operator-btn {
+  background-color: #ff9f0a;
+  color: #ffffff;
+}
+
+.special-btn {
+  background-color: #4e505f;
+  color: #ffffff;
+  font-size: 1.1rem;
+}
+
+.equals-btn {
+  background-color: #ff9f0a;
+  color: #ffffff;
+}
+
+/* Make the '0' key stretch across two layout tracks */
+.zero-btn {
+  grid-column: span 2;
+  border-radius: 30px;
+  text-align: left;
+  padding-left: 25px;
+}
